@@ -1,4 +1,4 @@
-import { Component } from '../src/component';
+import { Component } from '@/component';
 import fs from 'fs';
 import path from 'path';
 
