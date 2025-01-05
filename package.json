@@ -16,6 +16,11 @@
   "author": "Brad Fair",
   "license": "MIT",
   "description": "An MCP Server that lets you implement personas in Cline via the `.clinerules` file.",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.5"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.5",
@@ -23,6 +28,7 @@
     "jest-silent-reporter": "^0.6.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^1.5.0"
   }
 }
