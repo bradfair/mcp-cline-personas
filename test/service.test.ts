@@ -10,7 +10,8 @@ describe('ComponentPersonaService', () => {
   let service: ComponentPersonaService;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync('test-');
+    tempDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
+    console.log('Created temp dir:', tempDir);
     service = new ComponentPersonaService(tempDir);
   });
 
@@ -85,6 +86,77 @@ describe('ComponentPersonaService', () => {
 
     it('should handle idempotent delete', () => {
       service.deletePersona('nonexistent'); // Should not throw
+    });
+  });
+
+  describe('Component deletion validation', () => {
+    it('should prevent deleting a component when personas depend on it', () => {
+      // Create component and persona that depends on it
+      service.setComponent('comp1', 'desc', 'text', 1);
+      service.setPersona('persona1', 'desc', 'template with {{comp1}}', 1);
+      
+      expect(() => service.deleteComponent('comp1')).toThrow(
+        /Cannot delete component: required by personas:.*persona1/
+      );
+    });
+
+    it('should allow deleting a component when no personas depend on it', () => {
+      service.setComponent('comp1', 'desc', 'text', 1);
+      service.deleteComponent('comp1');
+      expect(service.getComponent('comp1')).toBeNull();
+    });
+  });
+
+  describe('Persona validation', () => {
+    it('should prevent saving persona with non-existent component dependencies', () => {
+      expect(() => service.setPersona(
+        'persona1',
+        'desc',
+        'template with {{nonexistent}}',
+        1
+      )).toThrow('Cannot save persona: depends on non-existent component: nonexistent');
+    });
+
+    it('should allow saving persona when all dependencies exist', () => {
+      service.setComponent('comp1', 'desc', 'text', 1);
+      expect(() => service.setPersona(
+        'persona1',
+        'desc',
+        'template with {{comp1}}',
+        1
+      )).not.toThrow();
+    });
+  });
+
+  describe('Persona activation', () => {
+    it('should write persona template to .clinerules file', () => {
+      service.setPersona('persona1', 'desc', 'template content', 1);
+      service.activatePersona('persona1');
+      let clineRulesPath = path.join(service.projectRoot, '.clinerules')
+      expect(fs.existsSync(clineRulesPath)).toBeTruthy();
+      expect(fs.readFileSync(clineRulesPath, 'utf-8')).toBe('template content');
+    });
+
+    it('should throw when activating non-existent persona', () => {
+      expect(() => service.activatePersona('nonexistent'))
+        .toThrow('Persona not found: nonexistent');
+    });
+
+    it('should get active persona name from .clinerules file', () => {
+      service.setPersona('persona1', 'desc', 'template content', 1);
+      service.activatePersona('persona1');
+      
+      const activePersona = service.getActivePersona();
+      expect(activePersona).toBe('persona1');
+    });
+
+    it('should return null when no persona is active', () => {
+      expect(service.getActivePersona()).toBeNull();
+    });
+
+    it('should return null when .clinerules file is empty', () => {
+      fs.writeFileSync(path.join(service.projectRoot, '.clinerules'), '');
+      expect(service.getActivePersona()).toBeNull();
     });
   });
 

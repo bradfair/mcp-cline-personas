@@ -22,8 +22,10 @@ export interface PersonaService {
 export class ComponentPersonaService implements ComponentService, PersonaService {
   private componentRoot: string;
   private personaRoot: string;
+  public readonly projectRoot: string;
 
   constructor(projectRoot: string) {
+    this.projectRoot = projectRoot;
     this.componentRoot = path.join(projectRoot, serviceDirectoryName, 'components');
     this.personaRoot = path.join(projectRoot, serviceDirectoryName, 'personas');
     this.ensureDirectoriesExist();
@@ -66,6 +68,18 @@ export class ComponentPersonaService implements ComponentService, PersonaService
   }
 
   deleteComponent(name: string): void {
+    const personas = this.listPersonas();
+    let dependents = [];
+    for (const personaName of personas) {
+      const persona = this.getPersona(personaName);
+      if (persona && persona.requiredComponents().includes(name)) {
+        dependents.push(personaName);
+      }
+    }
+    if (dependents.length > 0) {
+      throw new Error(`Cannot delete component: required by personas: ${dependents.join(', ')}`);
+    }
+
     const filePath = this.getComponentPath(name);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -75,7 +89,46 @@ export class ComponentPersonaService implements ComponentService, PersonaService
   // Persona operations
   setPersona(name: string, description: string, template: string, version: number): void {
     const persona = new Persona(name, description, template, version);
+    
+    // Validate that all required components exist
+    const requiredComponents = persona.requiredComponents();
+    for (const componentName of requiredComponents) {
+      if (!this.getComponent(componentName)) {
+        throw new Error(`Cannot save persona: depends on non-existent component: ${componentName}`);
+      }
+    }
+
     persona.saveToFile(this.getPersonaPath(name));
+  }
+
+  activatePersona(name: string): void {
+    const persona = this.getPersona(name);
+    if (!persona) {
+      throw new Error(`Persona not found: ${name}`);
+    }
+
+    const clinerulesPath = path.join(this.projectRoot, '.clinerules');
+    fs.writeFileSync(clinerulesPath, persona.template);
+  }
+
+  getActivePersona(): string | null {
+    const clinerulesPath = path.join(this.projectRoot, '.clinerules');
+    if (!fs.existsSync(clinerulesPath)) {
+      return null;
+    }
+
+    const template = fs.readFileSync(clinerulesPath, 'utf-8');
+
+    // Find which persona matches this template
+    const personas = this.listPersonas();
+    for (const personaName of personas) {
+      const persona = this.getPersona(personaName);
+      if (persona && persona.template === template) {
+        return personaName;
+      }
+    }
+
+    return null;
   }
 
   getPersona(name: string): Persona | null {
