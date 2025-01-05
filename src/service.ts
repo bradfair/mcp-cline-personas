@@ -10,6 +10,7 @@ export interface ComponentService {
   getComponent(name: string): Component | null;
   listComponents(): string[];
   deleteComponent(name: string): void;
+  describeComponents(): Map<string, string>;
 }
 
 export interface PersonaService {
@@ -17,6 +18,7 @@ export interface PersonaService {
   getPersona(name: string): Persona | null;
   listPersonas(): string[];
   deletePersona(name: string): void;
+  describePersonas(): Map<string, string>;
 }
 
 export class ComponentPersonaService implements ComponentService, PersonaService {
@@ -149,6 +151,28 @@ export class ComponentPersonaService implements ComponentService, PersonaService
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
+  }
+
+  describePersonas(): Map<string, string> {
+    const personaMap = new Map<string, string>();
+    for (const name of this.listPersonas()) {
+      const persona = this.getPersona(name);
+      if (persona) {
+        personaMap.set(name, persona.description);
+      }
+    }
+    return personaMap;
+  }
+
+  describeComponents(): Map<string, string> {
+    const componentMap = new Map<string, string>();
+    for (const name of this.listComponents()) {
+      const component = this.getComponent(name);
+      if (component) {
+        componentMap.set(name, component.description);
+      }
+    }
+    return componentMap;
   }
 
   renderPersona(name: string): string {

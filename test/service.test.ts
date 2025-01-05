@@ -253,4 +253,38 @@ describe('ComponentPersonaService', () => {
         .toThrow('Cannot render persona: missing required component: unusedcomp');
     });
   });
+
+  describe('describePersonas', () => {
+    it('should return empty map when no personas exist', () => {
+      const result = service.describePersonas();
+      expect(result.size).toBe(0);
+    });
+
+    it('should return correct name-description mappings', () => {
+      service.setPersona('persona1', 'description1', 'template1', 1);
+      service.setPersona('persona2', 'description2', 'template2', 1);
+      
+      const result = service.describePersonas();
+      expect(result.size).toBe(2);
+      expect(result.get('persona1')).toBe('description1');
+      expect(result.get('persona2')).toBe('description2');
+    });
+  });
+
+  describe('describeComponents', () => {
+    it('should return empty map when no components exist', () => {
+      const result = service.describeComponents();
+      expect(result.size).toBe(0);
+    });
+
+    it('should return correct name-description mappings', () => {
+      service.setComponent('comp1', 'description1', 'text1', 1);
+      service.setComponent('comp2', 'description2', 'text2', 1);
+      
+      const result = service.describeComponents();
+      expect(result.size).toBe(2);
+      expect(result.get('comp1')).toBe('description1');
+      expect(result.get('comp2')).toBe('description2');
+    });
+  });
 });
