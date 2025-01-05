@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, it, beforeEach, afterEach } from '@jest/globals';
-import { ComponentPersonaService } from '@/service';
-import { Component } from '@/component';
-import { Persona } from '@/persona';
+import { ComponentPersonaService } from '@src/service';
+import { Component } from '@src/component';
+import { Persona } from '@src/persona';
 
 describe('ComponentPersonaService', () => {
   let tempDir: string;

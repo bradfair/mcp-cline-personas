@@ -12,7 +12,7 @@ const config: Config.InitialOptions = {
   coverageReporters: ['text', 'lcov'],
   coverageDirectory: 'coverage',
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@src/(.*)$': '<rootDir>/src/$1',
     '^@test/(.*)$': '<rootDir>/test/$1'
   },
   roots: ['<rootDir>']

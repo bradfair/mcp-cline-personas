@@ -8,6 +8,28 @@ import {
 import { ComponentPersonaService } from "./service.js";
 import { z } from "zod";
 
+interface PersonaServer extends Server {
+  listPrompts(): Promise<{ personas: Array<{ name: string, description: string }> }>;
+  createOrUpdatePersona(args: {
+    name: string;
+    description: string;
+    template: string;
+    version: number;
+  }): Promise<{ success: boolean }>;
+  deletePersona(args: { name: string }): Promise<{ success: boolean }>;
+  activatePersona(args: { name: string }): Promise<{ success: boolean }>;
+  listTools(): Promise<{ tools: Array<{ name: string, description: string }> }>;
+  createOrUpdateComponent(args: {
+    name: string;
+    description: string;
+    text: string;
+    version: number;
+  }): Promise<{ success: boolean }>;
+  deleteComponent(args: { name: string }): Promise<{ success: boolean }>;
+  listResources(): Promise<{ resources: Array<{ name: string, description: string }> }>;
+  callTool(args: { name: string, arguments?: unknown }): Promise<unknown>;
+}
+
 const PersonaSchema = z.object({
   name: z.string(),
   description: z.string()
@@ -18,7 +40,7 @@ const ComponentSchema = z.object({
   description: z.string()
 });
 
-export const createServer = (service: ComponentPersonaService) => {
+export const createServer = (service: ComponentPersonaService): { server: PersonaServer } => {
   const server = new Server(
     {
       name: "cline-personas",
@@ -75,7 +97,7 @@ export const createServer = (service: ComponentPersonaService) => {
   });
 
   // Create/Update Persona
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     if (request.params.name === "createOrUpdatePersona") {
       const result = CreatePersonaSchema.safeParse(request.params.arguments);
       if (!result.success) {
@@ -89,7 +111,7 @@ export const createServer = (service: ComponentPersonaService) => {
   });
 
   // Create/Update Component
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     if (request.params.name === "createOrUpdateComponent") {
       const result = CreateComponentSchema.safeParse(request.params.arguments);
       if (!result.success) {
@@ -103,7 +125,7 @@ export const createServer = (service: ComponentPersonaService) => {
   });
 
   // Delete Persona
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     if (request.params.name === "deletePersona") {
       const result = DeleteSchema.safeParse(request.params.arguments);
       if (!result.success) {
@@ -117,7 +139,7 @@ export const createServer = (service: ComponentPersonaService) => {
   });
 
   // Delete Component
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     if (request.params.name === "deleteComponent") {
       const result = DeleteSchema.safeParse(request.params.arguments);
       if (!result.success) {
@@ -131,7 +153,7 @@ export const createServer = (service: ComponentPersonaService) => {
   });
 
   // Activate Persona
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     if (request.params.name === "activatePersona") {
       const result = DeleteSchema.safeParse(request.params.arguments);
       if (!result.success) {
@@ -155,7 +177,7 @@ export const createServer = (service: ComponentPersonaService) => {
     };
   });
 
-  return { server };
+  return { server: server as PersonaServer };
 };
 
 export const createPersonaServer = (projectRoot: string) => {

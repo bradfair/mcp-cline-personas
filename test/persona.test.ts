@@ -1,4 +1,4 @@
-import { Persona } from '@/persona';
+import { Persona } from '@src/persona';
 import fs from 'fs';
 import path from 'path';
 
