@@ -90,9 +90,9 @@ export class ComponentPersonaService implements ComponentService, PersonaService
   setPersona(name: string, description: string, template: string, version: number): void {
     const persona = new Persona(name, description, template, version);
     
-    // Validate that all required components exist
-    const requiredComponents = persona.requiredComponents();
-    for (const componentName of requiredComponents) {
+    // Validate that all template variables exist as components
+    const templateComponents = persona.requiredComponents();
+    for (const componentName of templateComponents) {
       if (!this.getComponent(componentName)) {
         throw new Error(`Cannot save persona: depends on non-existent component: ${componentName}`);
       }
@@ -149,5 +149,24 @@ export class ComponentPersonaService implements ComponentService, PersonaService
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
+  }
+
+  renderPersona(name: string): string {
+    const persona = this.getPersona(name);
+    if (!persona) {
+      throw new Error(`Persona not found: ${name}`);
+    }
+
+    // Get all required components and their texts
+    const data: Record<string, string> = {};
+    for (const componentName of persona.requiredComponents()) {
+      const component = this.getComponent(componentName);
+      if (!component) {
+        throw new Error(`Cannot render persona: missing required component: ${componentName}`);
+      }
+      data[componentName] = component.text;
+    }
+
+    return persona.render(data);
   }
 }

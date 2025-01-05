@@ -215,4 +215,42 @@ describe('ComponentPersonaService', () => {
       expect(service.listPersonas()).toEqual([]);
     });
   });
+
+  describe('renderPersona', () => {
+    it('should render persona with component texts', () => {
+      // Setup components
+      service.setComponent('comp1', 'desc1', 'text1', 1);
+      service.setComponent('comp2', 'desc2', 'text2', 1);
+      
+      // Setup persona with template
+      const template = 'Component 1: {{comp1}}\nComponent 2: {{comp2}}';
+      service.setPersona('test', 'description', template, 1);
+      
+      // Render persona
+      const result = service.renderPersona('test');
+      
+      // Verify output
+      expect(result).toBe('Component 1: text1\nComponent 2: text2');
+    });
+
+    it('should throw when persona does not exist', () => {
+      expect(() => service.renderPersona('nonexistent'))
+        .toThrow('Persona not found: nonexistent');
+    });
+
+    it('should handle missing components in template', () => {
+      // Create a component that isn't referenced by any persona
+      service.setComponent('unusedComp', 'desc', 'text', 1);
+      
+      // Create persona that depends on a different component
+      service.setPersona('test', 'description', 'Template with {{unusedComp}}', 1);
+      
+      // Delete the unused component to simulate it being missing
+      service.deleteComponent('unusedComp');
+      
+      // Verify error is thrown when trying to render
+      expect(() => service.renderPersona('test'))
+        .toThrow('Cannot render persona: missing required component: unusedcomp');
+    });
+  });
 });
