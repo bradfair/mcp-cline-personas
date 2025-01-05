@@ -117,13 +117,13 @@ export class ComponentPersonaService implements ComponentService, PersonaService
       return null;
     }
 
-    const template = fs.readFileSync(clinerulesPath, 'utf-8');
+    const currentClineRules = fs.readFileSync(clinerulesPath, 'utf-8');
 
-    // Find which persona matches this template
+    // Find the active persona by comparing rendered personas with the current .clinerules file
     const personas = this.listPersonas();
     for (const personaName of personas) {
-      const persona = this.getPersona(personaName);
-      if (persona && persona.template === template) {
+      const renderedPersona = this.renderPersona(personaName);
+      if (renderedPersona === currentClineRules) {
         return personaName;
       }
     }
