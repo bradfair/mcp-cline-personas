@@ -98,10 +98,10 @@ describe("Component", () => {
       const originalRead = fs.readFileSync;
       const originalExists = fs.existsSync;
       try {
-        fs.readFileSync = jest.fn().mockImplementation(() => {
+        fs.readFileSync = jest.fn<typeof fs.readFileSync>().mockImplementation((path: fs.PathOrFileDescriptor, options?: { encoding?: BufferEncoding | null; flag?: string } | null | BufferEncoding) => {
           throw new Error("EACCES: permission denied, open");
-        });
-        fs.existsSync = jest.fn().mockReturnValue(true);
+        }) as jest.MockedFunction<typeof fs.readFileSync>;
+        fs.existsSync = jest.fn<typeof fs.existsSync>().mockReturnValue(true) as jest.MockedFunction<typeof fs.existsSync>;
 
         expect(() => Component.loadFromFile(testFilePath)).toThrow(
           "Failed to load component: Error: EACCES: permission denied, open"
