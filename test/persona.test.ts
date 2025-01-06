@@ -1,4 +1,4 @@
-import { Persona } from "@src/persona";
+import { Persona } from "@src/persona.js";
 import fs from "fs";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";

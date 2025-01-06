@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { Component } from "@src/component";
-import { Persona } from "@src/persona";
+import { Component } from "@src/component.js";
+import { Persona } from "@src/persona.js";
 
 const serviceDirectoryName = ".cline-personas";
 

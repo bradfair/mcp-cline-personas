@@ -1,4 +1,4 @@
-import { createServer } from "@src/server";
+import { createServer } from "@src/server.js";
 import { 
   ListToolsRequestSchema,
   JSONRPCMessage
@@ -6,7 +6,7 @@ import {
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { ComponentPersonaService } from "@src/service";
+import { ComponentPersonaService } from "@src/service.js";
 
 import fs from "fs";
 

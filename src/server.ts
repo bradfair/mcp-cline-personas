@@ -6,7 +6,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { ComponentPersonaService } from "@src/service";
+import { ComponentPersonaService } from "@src/service.js";
 
 type ToolInput = {
   type: "object";

@@ -1,4 +1,4 @@
-import { Component } from "@src/component";
+import { Component } from "@src/component.js";
 import fs from "fs";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";

@@ -1,9 +1,9 @@
 import fs from "fs";
 import path, { dirname } from "path";
 import { describe, it, beforeEach, afterEach } from "@jest/globals";
-import { ComponentPersonaService } from "@src/service";
-import { Component } from "@src/component";
-import { Persona } from "@src/persona";
+import { ComponentPersonaService } from "@src/service.js";
+import { Component } from "@src/component.js";
+import { Persona } from "@src/persona.js";
 import { fileURLToPath } from "url";
 import { jest } from "@jest/globals";
 

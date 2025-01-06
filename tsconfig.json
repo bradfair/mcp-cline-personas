@@ -11,8 +11,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@src/*": ["./src/*.ts"],
-      "@test/*": ["./test/*.ts"]
+      "@src/*": ["./src/*"],
+      "@test/*": ["./test/*"]
     }
   },
   "include": ["./src/**/*", "./test/**/*", "./jest.config.ts"],
