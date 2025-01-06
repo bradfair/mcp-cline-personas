@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "cline-personas": "./dist/index.js"
+    "cline-personas": "./dist/src/index.js"
   },
   "files": [
     "dist"
@@ -12,7 +12,7 @@
     "test": "echo 'showing only failing test and coverage data:' && NODE_NO_WARNINGS=1 node --experimental-vm-modules node_modules/.bin/jest",
     "build": "tsc && tsc-alias",
     "watch": "tsc -w",
-    "dev": "ts-node -r tsconfig-paths/register src/server.ts"
+    "dev": "ts-node -r tsconfig-paths/register src/index.ts"
   },
   "author": "Brad Fair",
   "license": "MIT",
