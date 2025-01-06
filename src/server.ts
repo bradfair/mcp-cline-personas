@@ -245,5 +245,5 @@ export const createServer = (projectRoot: string) => {
     }
   });
 
-  return { server };
+  return { server, service };
 };
