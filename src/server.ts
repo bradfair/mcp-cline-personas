@@ -6,6 +6,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { ComponentPersonaService } from "@src/service";
+import path from "path";
 
 type ToolInput = {
   type: "object";
@@ -26,6 +28,7 @@ enum ToolName {
 }
 
 export const createServer = () => {
+  const service = new ComponentPersonaService(path.resolve(__dirname, ".."));
   const server = new Server(
     {
       name: "persona-server",
@@ -147,7 +150,7 @@ export const createServer = () => {
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await listPersonas())
+            text: JSON.stringify(service.listPersonas())
           }]
         };
 
@@ -155,7 +158,7 @@ export const createServer = () => {
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await listComponents())
+            text: JSON.stringify(service.listComponents())
           }]
         };
 
@@ -166,10 +169,16 @@ export const createServer = () => {
           template: createPersonaArgs.template,
           version: createPersonaArgs.version
         };
+        service.setPersona(
+          createPersonaArgs.name,
+          createPersonaArgs.description,
+          createPersonaArgs.template,
+          createPersonaArgs.version
+        );
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await createOrUpdate(createPersonaArgs.name, personaData))
+            text: JSON.stringify({ success: true })
           }]
         };
 
@@ -180,45 +189,55 @@ export const createServer = () => {
           text: createComponentArgs.text,
           version: createComponentArgs.version
         };
+        service.setComponent(
+          createComponentArgs.name,
+          createComponentArgs.description,
+          createComponentArgs.text,
+          createComponentArgs.version
+        );
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await createOrUpdate(createComponentArgs.name, componentData))
+            text: JSON.stringify({ success: true })
           }]
         };
 
       case ToolName.DELETE_PERSONA:
         const deletePersonaArgs = DeletePersonaSchema.parse(args);
+        service.deletePersona(deletePersonaArgs.name);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await deleteItem(deletePersonaArgs.name))
+            text: JSON.stringify({ success: true })
           }]
         };
 
       case ToolName.DELETE_COMPONENT:
         const deleteComponentArgs = DeleteComponentSchema.parse(args);
+        service.deleteComponent(deleteComponentArgs.name);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await deleteItem(deleteComponentArgs.name))
+            text: JSON.stringify({ success: true })
           }]
         };
 
       case ToolName.ACTIVATE_PERSONA:
         const activateArgs = ActivatePersonaSchema.parse(args);
+        service.activatePersona(activateArgs.name);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await activatePersona(activateArgs.name))
+            text: JSON.stringify({ success: true })
           }]
         };
 
       case ToolName.GET_ACTIVE_PERSONA:
+        const activePersona = service.getActivePersona();
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(await getActivePersona())
+            text: JSON.stringify({ activePersona })
           }]
         };
 
@@ -229,28 +248,3 @@ export const createServer = () => {
 
   return { server };
 };
-
-// These functions should be imported from service.ts
-async function listPersonas() {
-  // Implementation from service.ts
-}
-
-async function listComponents() {
-  // Implementation from service.ts
-}
-
-async function createOrUpdate(id: string, data: Record<string, any>) {
-  // Implementation from service.ts
-}
-
-async function deleteItem(id: string): Promise<void> {
-  // Implementation from service.ts
-}
-
-async function activatePersona(id: string) {
-  // Implementation from service.ts
-}
-
-async function getActivePersona() {
-  // Implementation from service.ts
-}
