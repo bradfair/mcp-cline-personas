@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "test": "echo 'showing only failing test and coverage data:' && node --experimental-vm-modules node_modules/.bin/jest",
+    "test": "echo 'showing only failing test and coverage data:' && NODE_NO_WARNINGS=1 node --experimental-vm-modules node_modules/.bin/jest",
     "build": "tsc && tsc-alias",
     "watch": "tsc -w",
     "dev": "ts-node -r tsconfig-paths/register src/server.ts"
