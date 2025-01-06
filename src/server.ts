@@ -7,7 +7,6 @@ import {
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { ComponentPersonaService } from "@src/service";
-import path from "path";
 
 type ToolInput = {
   type: "object";
@@ -27,8 +26,8 @@ enum ToolName {
   GET_ACTIVE_PERSONA = "getActivePersona"
 }
 
-export const createServer = () => {
-  const service = new ComponentPersonaService(path.resolve(__dirname, ".."));
+export const createServer = (projectRoot: string) => {
+  const service = new ComponentPersonaService(projectRoot);
   const server = new Server(
     {
       name: "persona-server",
