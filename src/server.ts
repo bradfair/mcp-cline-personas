@@ -27,7 +27,7 @@ enum ToolName {
 }
 
 export const createServer = (projectRoot: string) => {
-  const service = new ComponentPersonaService(projectRoot);
+  const service = new ComponentPersonaService();
   const server = new Server(
     {
       name: "persona-server",
@@ -45,16 +45,16 @@ export const createServer = (projectRoot: string) => {
   const ListComponentsSchema = z.object({});
   const CreateOrUpdatePersonaSchema = z.object({
     name: z.string(),
-    description: z.string(),
-    template: z.string(),
-    version: z.number()
+    description: z.string().optional(),
+    template: z.string().optional(),
+    version: z.number().optional()
   });
   
   const CreateOrUpdateComponentSchema = z.object({
     name: z.string(),
-    description: z.string(),
-    text: z.string(),
-    version: z.number()
+    description: z.string().optional(),
+    text: z.string().optional(),
+    version: z.number().optional()
   });
   
   const DeletePersonaSchema = z.object({
@@ -149,7 +149,7 @@ export const createServer = (projectRoot: string) => {
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(service.listPersonas())
+            text: JSON.stringify(service.listPersonas(projectRoot))
           }]
         };
 
@@ -157,7 +157,7 @@ export const createServer = (projectRoot: string) => {
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(service.listComponents())
+            text: JSON.stringify(service.listComponents(projectRoot))
           }]
         };
 
@@ -169,10 +169,11 @@ export const createServer = (projectRoot: string) => {
           version: createPersonaArgs.version
         };
         service.setPersona(
+          projectRoot,
           createPersonaArgs.name,
-          createPersonaArgs.description,
-          createPersonaArgs.template,
-          createPersonaArgs.version
+          createPersonaArgs.description || '',
+          createPersonaArgs.template || '',
+          createPersonaArgs.version || 1
         );
         return {
           content: [{
@@ -189,10 +190,11 @@ export const createServer = (projectRoot: string) => {
           version: createComponentArgs.version
         };
         service.setComponent(
+          projectRoot,
           createComponentArgs.name,
-          createComponentArgs.description,
-          createComponentArgs.text,
-          createComponentArgs.version
+          createComponentArgs.description?.toString() || '',
+          createComponentArgs.text?.toString() || '',
+          createComponentArgs.version || 1
         );
         return {
           content: [{
@@ -203,7 +205,7 @@ export const createServer = (projectRoot: string) => {
 
       case ToolName.DELETE_PERSONA:
         const deletePersonaArgs = DeletePersonaSchema.parse(args);
-        service.deletePersona(deletePersonaArgs.name);
+        service.deletePersona(projectRoot, deletePersonaArgs.name);
         return {
           content: [{
             type: "text",
@@ -213,7 +215,7 @@ export const createServer = (projectRoot: string) => {
 
       case ToolName.DELETE_COMPONENT:
         const deleteComponentArgs = DeleteComponentSchema.parse(args);
-        service.deleteComponent(deleteComponentArgs.name);
+        service.deleteComponent(projectRoot, deleteComponentArgs.name);
         return {
           content: [{
             type: "text",
@@ -223,7 +225,7 @@ export const createServer = (projectRoot: string) => {
 
       case ToolName.ACTIVATE_PERSONA:
         const activateArgs = ActivatePersonaSchema.parse(args);
-        service.activatePersona(activateArgs.name);
+        service.activatePersona(projectRoot, activateArgs.name);
         return {
           content: [{
             type: "text",
@@ -232,7 +234,7 @@ export const createServer = (projectRoot: string) => {
         };
 
       case ToolName.GET_ACTIVE_PERSONA:
-        const activePersona = service.getActivePersona();
+        const activePersona = service.getActivePersona(projectRoot);
         return {
           content: [{
             type: "text",

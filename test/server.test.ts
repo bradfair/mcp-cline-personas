@@ -122,7 +122,7 @@ describe("Server Tools", () => {
 
     // Create test persona
     const { service } = server;
-    service.setPersona("test-persona", "test description", "template", 1);
+    service.setPersona(tempDir, "test-persona", "test description", "template", 1);
 
     // Get personas
     const response = await client.callTool({
@@ -159,7 +159,7 @@ describe("Server Tools", () => {
 
     // Create test component
     const { service } = server;
-    service.setComponent("test-component", "test description", "text", 1);
+    service.setComponent(tempDir, "test-component", "test description", "text", 1);
 
     // Get components
     const response = await client.callTool({
@@ -212,7 +212,7 @@ describe("Server Tools", () => {
 
     // Verify persona was created
     const { service } = server;
-    const persona = service.getPersona("test-persona");
+    const persona = service.getPersona(tempDir, "test-persona");
     expect(persona).toBeDefined();
     expect(persona?.description).toBe("test description");
   });
@@ -256,7 +256,7 @@ describe("Server Tools", () => {
 
     // Verify component was created
     const { service } = server;
-    const component = service.getComponent("test-component");
+    const component = service.getComponent(tempDir, "test-component");
     expect(component).toBeDefined();
     expect(component?.description).toBe("test description");
     expect(component?.text).toBe("test text");
@@ -285,7 +285,7 @@ describe("Server Tools", () => {
 
     // Create test persona
     const { service } = server;
-    service.setPersona("test-persona", "test description", "template", 1);
+    service.setPersona(tempDir, "test-persona", "test description", "template", 1);
 
     // Delete persona
     const response = await client.callTool({
@@ -301,7 +301,7 @@ describe("Server Tools", () => {
     expect(result.success).toBe(true);
 
     // Verify persona was deleted
-    const deletedPersona = service.getPersona("test-persona");
+    const deletedPersona = service.getPersona(tempDir, "test-persona");
     expect(deletedPersona).toBeNull();
   });
 
@@ -328,7 +328,7 @@ describe("Server Tools", () => {
 
     // Create test component
     const { service } = server;
-    service.setComponent("test-component", "test description", "test text", 1);
+    service.setComponent(tempDir, "test-component", "test description", "test text", 1);
 
     // Delete component
     const response = await client.callTool({
@@ -344,7 +344,7 @@ describe("Server Tools", () => {
     expect(result.success).toBe(true);
 
     // Verify component was deleted
-    const deletedComponent = service.getComponent("test-component");
+    const deletedComponent = service.getComponent(tempDir, "test-component");
     expect(deletedComponent).toBeNull();
   });
 
@@ -371,7 +371,7 @@ describe("Server Tools", () => {
 
     // Create test persona
     const { service } = server;
-    service.setPersona("test-persona", "test description", "template", 1);
+    service.setPersona(tempDir, "test-persona", "test description", "template", 1);
 
     // Activate persona
     const response = await client.callTool({
@@ -387,7 +387,7 @@ describe("Server Tools", () => {
     expect(result.success).toBe(true);
 
     // Verify persona was activated
-    const activePersona = service.getActivePersona();
+    const activePersona = service.getActivePersona(tempDir);
     expect(activePersona).toBe("test-persona");
   });
 
@@ -414,8 +414,8 @@ describe("Server Tools", () => {
 
     // Create and activate test persona
     const { service } = server;
-    service.setPersona("test-persona", "test description", "template", 1);
-    service.activatePersona("test-persona");
+    service.setPersona(tempDir, "test-persona", "test description", "template", 1);
+    service.activatePersona(tempDir, "test-persona");
 
     // Get active persona
     const response = await client.callTool({

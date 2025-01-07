@@ -17,7 +17,7 @@ describe("ComponentPersonaService", () => {
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(__dirname, "test-"));
     console.log("Created temp dir:", tempDir);
-    service = new ComponentPersonaService(tempDir);
+    service = new ComponentPersonaService();
   });
 
   afterEach(() => {
@@ -26,8 +26,8 @@ describe("ComponentPersonaService", () => {
 
   describe("Component operations", () => {
     it("should set and get a component", () => {
-      service.setComponent("test", "description", "text", 1);
-      const component = service.getComponent("test");
+      service.setComponent(tempDir, "test", "description", "text", 1);
+      const component = service.getComponent(tempDir, "test");
       expect(component).toBeInstanceOf(Component);
       expect(component?.name).toBe("test");
       expect(component?.description).toBe("description");
@@ -36,33 +36,33 @@ describe("ComponentPersonaService", () => {
     });
 
     it("should return null for non-existent component", () => {
-      const component = service.getComponent("nonexistent");
+      const component = service.getComponent(tempDir, "nonexistent");
       expect(component).toBeNull();
     });
 
     it("should list components", () => {
-      service.setComponent("test1", "desc1", "text1", 1);
-      service.setComponent("test2", "desc2", "text2", 1);
-      const components = service.listComponents();
+      service.setComponent(tempDir, "test1", "desc1", "text1", 1);
+      service.setComponent(tempDir, "test2", "desc2", "text2", 1);
+      const components = service.listComponents(tempDir);
       expect(components).toEqual(["test1", "test2"]);
     });
 
     it("should delete a component", () => {
-      service.setComponent("test", "description", "text", 1);
-      service.deleteComponent("test");
-      const component = service.getComponent("test");
+      service.setComponent(tempDir, "test", "description", "text", 1);
+      service.deleteComponent(tempDir, "test");
+      const component = service.getComponent(tempDir, "test");
       expect(component).toBeNull();
     });
 
     it("should handle idempotent delete", () => {
-      service.deleteComponent("nonexistent"); // Should not throw
+      service.deleteComponent(tempDir, "nonexistent"); // Should not throw
     });
   });
 
   describe("Persona operations", () => {
     it("should set and get a persona", () => {
-      service.setPersona("test", "description", "template", 1);
-      const persona = service.getPersona("test");
+      service.setPersona(tempDir, "test", "description", "template", 1);
+      const persona = service.getPersona(tempDir, "test");
       expect(persona).toBeInstanceOf(Persona);
       expect(persona?.name).toBe("test");
       expect(persona?.description).toBe("description");
@@ -71,44 +71,44 @@ describe("ComponentPersonaService", () => {
     });
 
     it("should return null for non-existent persona", () => {
-      const persona = service.getPersona("nonexistent");
+      const persona = service.getPersona(tempDir, "nonexistent");
       expect(persona).toBeNull();
     });
 
     it("should list personas", () => {
-      service.setPersona("test1", "desc1", "template1", 1);
-      service.setPersona("test2", "desc2", "template2", 1);
-      const personas = service.listPersonas();
+      service.setPersona(tempDir, "test1", "desc1", "template1", 1);
+      service.setPersona(tempDir, "test2", "desc2", "template2", 1);
+      const personas = service.listPersonas(tempDir);
       expect(personas).toEqual(["test1", "test2"]);
     });
 
     it("should delete a persona", () => {
-      service.setPersona("test", "description", "template", 1);
-      service.deletePersona("test");
-      const persona = service.getPersona("test");
+      service.setPersona(tempDir, "test", "description", "template", 1);
+      service.deletePersona(tempDir, "test");
+      const persona = service.getPersona(tempDir, "test");
       expect(persona).toBeNull();
     });
 
     it("should handle idempotent delete", () => {
-      service.deletePersona("nonexistent"); // Should not throw
+      service.deletePersona(tempDir, "nonexistent"); // Should not throw
     });
   });
 
   describe("Component deletion validation", () => {
     it("should prevent deleting a component when personas depend on it", () => {
       // Create component and persona that depends on it
-      service.setComponent("comp1", "desc", "text", 1);
-      service.setPersona("persona1", "desc", "template with {{comp1}}", 1);
+      service.setComponent(tempDir, "comp1", "desc", "text", 1);
+      service.setPersona(tempDir, "persona1", "desc", "template with {{comp1}}", 1);
 
-      expect(() => service.deleteComponent("comp1")).toThrow(
+      expect(() => service.deleteComponent(tempDir, "comp1")).toThrow(
         /Cannot delete component: required by personas:.*persona1/
       );
     });
 
     it("should allow deleting a component when no personas depend on it", () => {
-      service.setComponent("comp1", "desc", "text", 1);
-      service.deleteComponent("comp1");
-      expect(service.getComponent("comp1")).toBeNull();
+      service.setComponent(tempDir, "comp1", "desc", "text", 1);
+      service.deleteComponent(tempDir, "comp1");
+      expect(service.getComponent(tempDir, "comp1")).toBeNull();
     });
   });
 
@@ -116,6 +116,7 @@ describe("ComponentPersonaService", () => {
     it("should prevent saving persona with non-existent component dependencies", () => {
       expect(() =>
         service.setPersona(
+          tempDir,
           "persona1",
           "desc",
           "template with {{nonexistent}}",
@@ -127,56 +128,56 @@ describe("ComponentPersonaService", () => {
     });
 
     it("should allow saving persona when all dependencies exist", () => {
-      service.setComponent("comp1", "desc", "text", 1);
+      service.setComponent(tempDir, "comp1", "desc", "text", 1);
       expect(() =>
-        service.setPersona("persona1", "desc", "template with {{comp1}}", 1)
+        service.setPersona(tempDir, "persona1", "desc", "template with {{comp1}}", 1)
       ).not.toThrow();
     });
   });
 
   describe("Persona activation", () => {
     it("should write persona template to .clinerules file", () => {
-      service.setPersona("persona1", "desc", "template content", 1);
-      service.activatePersona("persona1");
-      let clineRulesPath = path.join(service.projectRoot, ".clinerules");
+      service.setPersona(tempDir, "persona1", "desc", "template content", 1);
+      service.activatePersona(tempDir, "persona1");
+      let clineRulesPath = path.join(tempDir, ".clinerules");
       expect(fs.existsSync(clineRulesPath)).toBeTruthy();
       expect(fs.readFileSync(clineRulesPath, "utf-8")).toBe("template content");
     });
 
     it("should throw when activating non-existent persona", () => {
-      expect(() => service.activatePersona("nonexistent")).toThrow(
+      expect(() => service.activatePersona(tempDir, "nonexistent")).toThrow(
         "Persona not found: nonexistent"
       );
     });
 
     it("should get active persona name from .clinerules file", () => {
-      service.setPersona("persona1", "desc", "template content", 1);
-      service.activatePersona("persona1");
+      service.setPersona(tempDir, "persona1", "desc", "template content", 1);
+      service.activatePersona(tempDir, "persona1");
 
-      const activePersona = service.getActivePersona();
+      const activePersona = service.getActivePersona(tempDir);
       expect(activePersona).toBe("persona1");
     });
 
     it("should return null when no persona is active", () => {
-      expect(service.getActivePersona()).toBeNull();
+      expect(service.getActivePersona(tempDir)).toBeNull();
     });
 
     it("should return null when .clinerules file is empty", () => {
-      fs.writeFileSync(path.join(service.projectRoot, ".clinerules"), "");
-      expect(service.getActivePersona()).toBeNull();
+      fs.writeFileSync(path.join(tempDir, ".clinerules"), "");
+      expect(service.getActivePersona(tempDir)).toBeNull();
     });
   });
 
   describe("Directory handling", () => {
     it("should create component directory if not exists", () => {
       const dir = path.join(tempDir, "new-components");
-      const newService = new ComponentPersonaService(dir);
+      const newService = new ComponentPersonaService();
       expect(fs.existsSync(dir)).toBeTruthy();
     });
 
     it("should create persona directory if not exists", () => {
       const dir = path.join(tempDir, "new-personas");
-      const newService = new ComponentPersonaService(dir);
+      const newService = new ComponentPersonaService();
       expect(fs.existsSync(dir)).toBeTruthy();
     });
 
@@ -186,8 +187,8 @@ describe("ComponentPersonaService", () => {
       fs.mkdirSync(dir, { recursive: true });
       fs.rmdirSync(dir);
 
-      const newService = new ComponentPersonaService(dir);
-      expect(newService.listComponents()).toEqual([]);
+      const newService = new ComponentPersonaService();
+      expect(newService.listComponents(tempDir)).toEqual([]);
     });
 
     it("should return empty array when listing non-existent persona directory", () => {
@@ -196,8 +197,8 @@ describe("ComponentPersonaService", () => {
       fs.mkdirSync(dir, { recursive: true });
       fs.rmdirSync(dir);
 
-      const newService = new ComponentPersonaService(dir);
-      expect(newService.listPersonas()).toEqual([]);
+      const newService = new ComponentPersonaService();
+      expect(newService.listPersonas(tempDir)).toEqual([]);
     });
 
     it("should handle removed component directory after initialization", () => {
@@ -210,7 +211,7 @@ describe("ComponentPersonaService", () => {
       fs.rmdirSync(path.join(tempDir, ".cline-personas", "components"));
 
       // Verify listComponents handles missing directory
-      expect(service.listComponents()).toEqual([]);
+      expect(service.listComponents(tempDir)).toEqual([]);
     });
 
     it("should handle removed persona directory after initialization", () => {
@@ -223,39 +224,40 @@ describe("ComponentPersonaService", () => {
       fs.rmdirSync(path.join(tempDir, ".cline-personas", "personas"));
 
       // Verify listPersonas handles missing directory
-      expect(service.listPersonas()).toEqual([]);
+      expect(service.listPersonas(tempDir)).toEqual([]);
     });
   });
 
   describe("renderPersona", () => {
     it("should render persona with component texts", () => {
       // Setup components
-      service.setComponent("comp1", "desc1", "text1", 1);
-      service.setComponent("comp2", "desc2", "text2", 1);
+      service.setComponent(tempDir, "comp1", "desc1", "text1", 1);
+      service.setComponent(tempDir, "comp2", "desc2", "text2", 1);
 
       // Setup persona with template
       const template = "Component 1: {{comp1}}\nComponent 2: {{comp2}}";
-      service.setPersona("test", "description", template, 1);
+      service.setPersona(tempDir, "test", "description", template, 1);
 
       // Render persona
-      const result = service.renderPersona("test");
+      const result = service.renderPersona(tempDir, "test");
 
       // Verify output
       expect(result).toBe("Component 1: text1\nComponent 2: text2");
     });
 
     it("should throw when persona does not exist", () => {
-      expect(() => service.renderPersona("nonexistent")).toThrow(
+      expect(() => service.renderPersona(tempDir, "nonexistent")).toThrow(
         "Persona not found: nonexistent"
       );
     });
 
     it("should handle missing components in template", () => {
       // Create a component that isn't referenced by any persona
-      service.setComponent("unusedComp", "desc", "text", 1);
+      service.setComponent(tempDir, "unusedComp", "desc", "text", 1);
 
       // Create persona that depends on a different component
       service.setPersona(
+        tempDir,
         "test",
         "description",
         "Template with {{unusedComp}}",
@@ -263,10 +265,10 @@ describe("ComponentPersonaService", () => {
       );
 
       // Delete the unused component to simulate it being missing
-      service.deleteComponent("unusedComp");
+      service.deleteComponent(tempDir, "unusedComp");
 
       // Verify error is thrown when trying to render
-      expect(() => service.renderPersona("test")).toThrow(
+      expect(() => service.renderPersona(tempDir, "test")).toThrow(
         "Cannot render persona: missing required component: unusedcomp"
       );
     });
@@ -274,15 +276,15 @@ describe("ComponentPersonaService", () => {
 
   describe("describePersonas", () => {
     it("should return empty map when no personas exist", () => {
-      const result = service.describePersonas();
+      const result = service.describePersonas(tempDir);
       expect(result.size).toBe(0);
     });
 
     it("should return correct name-description mappings", () => {
-      service.setPersona("persona1", "description1", "template1", 1);
-      service.setPersona("persona2", "description2", "template2", 1);
+      service.setPersona(tempDir, "persona1", "description1", "template1", 1);
+      service.setPersona(tempDir, "persona2", "description2", "template2", 1);
 
-      const result = service.describePersonas();
+      const result = service.describePersonas(tempDir);
       expect(result.size).toBe(2);
       expect(result.get("persona1")).toBe("description1");
       expect(result.get("persona2")).toBe("description2");
@@ -291,15 +293,15 @@ describe("ComponentPersonaService", () => {
 
   describe("describeComponents", () => {
     it("should return empty map when no components exist", () => {
-      const result = service.describeComponents();
+      const result = service.describeComponents(tempDir);
       expect(result.size).toBe(0);
     });
 
     it("should return correct name-description mappings", () => {
-      service.setComponent("comp1", "description1", "text1", 1);
-      service.setComponent("comp2", "description2", "text2", 1);
+      service.setComponent(tempDir, "comp1", "description1", "text1", 1);
+      service.setComponent(tempDir, "comp2", "description2", "text2", 1);
 
-      const result = service.describeComponents();
+      const result = service.describeComponents(tempDir);
       expect(result.size).toBe(2);
       expect(result.get("comp1")).toBe("description1");
       expect(result.get("comp2")).toBe("description2");
