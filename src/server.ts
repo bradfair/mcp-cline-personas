@@ -45,16 +45,16 @@ export const createServer = (projectRoot: string) => {
   const ListComponentsSchema = z.object({});
   const CreateOrUpdatePersonaSchema = z.object({
     name: z.string(),
-    description: z.string().optional(),
-    template: z.string().optional(),
-    version: z.number().optional()
+    description: z.string(),
+    template: z.string(),
+    version: z.number()
   });
   
   const CreateOrUpdateComponentSchema = z.object({
     name: z.string(),
-    description: z.string().optional(),
-    text: z.string().optional(),
-    version: z.number().optional()
+    description: z.string(),
+    text: z.string(),
+    version: z.number()
   });
   
   const DeletePersonaSchema = z.object({
@@ -171,9 +171,9 @@ export const createServer = (projectRoot: string) => {
         service.setPersona(
           projectRoot,
           createPersonaArgs.name,
-          createPersonaArgs.description || '',
-          createPersonaArgs.template || '',
-          createPersonaArgs.version || 1
+          createPersonaArgs.description,
+          createPersonaArgs.template,
+          createPersonaArgs.version
         );
         return {
           content: [{
@@ -192,9 +192,9 @@ export const createServer = (projectRoot: string) => {
         service.setComponent(
           projectRoot,
           createComponentArgs.name,
-          createComponentArgs.description?.toString() || '',
-          createComponentArgs.text?.toString() || '',
-          createComponentArgs.version || 1
+          createComponentArgs.description,
+          createComponentArgs.text,
+          createComponentArgs.version
         );
         return {
           content: [{

@@ -37,26 +37,28 @@ export class ComponentPersonaService
   implements ComponentService, PersonaService
 {
   private getComponentRoot(projectRoot: string): string {
-    return path.join(projectRoot, serviceDirectoryName, "components");
+    const componentRoot = path.join(projectRoot, serviceDirectoryName, "components");
+    if (!fs.existsSync(componentRoot)) {
+      fs.mkdirSync(componentRoot, { recursive: true });
+    }
+    return componentRoot;
   }
 
   private getPersonaRoot(projectRoot: string): string {
-    return path.join(projectRoot, serviceDirectoryName, "personas");
+    const personaRoot = path.join(projectRoot, serviceDirectoryName, "personas");
+    if (!fs.existsSync(personaRoot)) {
+      fs.mkdirSync(personaRoot, { recursive: true });
+    }
+    return personaRoot;
   }
 
   private getComponentPath(projectRoot: string, name: string): string {
     const componentRoot = this.getComponentRoot(projectRoot);
-    if (!fs.existsSync(componentRoot)) {
-      fs.mkdirSync(componentRoot, { recursive: true });
-    }
     return path.join(componentRoot, `${name}.json`);
   }
 
   private getPersonaPath(projectRoot: string, name: string): string {
     const personaRoot = this.getPersonaRoot(projectRoot);
-    if (!fs.existsSync(personaRoot)) {
-      fs.mkdirSync(personaRoot, { recursive: true });
-    }
     return path.join(personaRoot, `${name}.json`);
   }
 
@@ -80,7 +82,6 @@ export class ComponentPersonaService
 
   listComponents(projectRoot: string): string[] {
     const componentRoot = this.getComponentRoot(projectRoot);
-    if (!fs.existsSync(componentRoot)) return [];
     return fs
       .readdirSync(componentRoot)
       .filter((file) => file.endsWith(".json"))
@@ -171,7 +172,6 @@ export class ComponentPersonaService
 
     listPersonas(projectRoot: string): string[] {
     const personaRoot = this.getPersonaRoot(projectRoot);
-    if (!fs.existsSync(personaRoot)) return [];
     return fs
       .readdirSync(personaRoot)
       .filter((file) => file.endsWith(".json"))

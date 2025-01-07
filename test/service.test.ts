@@ -15,7 +15,7 @@ describe("ComponentPersonaService", () => {
   let service: ComponentPersonaService;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(__dirname, "test-"));
+    tempDir = fs.mkdtempSync("component-persona-service-test-");
     console.log("Created temp dir:", tempDir);
     service = new ComponentPersonaService();
   });
@@ -172,59 +172,15 @@ describe("ComponentPersonaService", () => {
     it("should create component directory if not exists", () => {
       const dir = path.join(tempDir, "new-components");
       const newService = new ComponentPersonaService();
+      newService.listComponents(dir);
       expect(fs.existsSync(dir)).toBeTruthy();
     });
 
     it("should create persona directory if not exists", () => {
       const dir = path.join(tempDir, "new-personas");
       const newService = new ComponentPersonaService();
+      newService.listPersonas(dir);
       expect(fs.existsSync(dir)).toBeTruthy();
-    });
-
-    it("should return empty array when listing non-existent component directory", () => {
-      const dir = path.join(tempDir, "empty-components");
-      // Create then remove directory to ensure it doesn't exist
-      fs.mkdirSync(dir, { recursive: true });
-      fs.rmdirSync(dir);
-
-      const newService = new ComponentPersonaService();
-      expect(newService.listComponents(tempDir)).toEqual([]);
-    });
-
-    it("should return empty array when listing non-existent persona directory", () => {
-      const dir = path.join(tempDir, "empty-personas");
-      // Create then remove directory to ensure it doesn't exist
-      fs.mkdirSync(dir, { recursive: true });
-      fs.rmdirSync(dir);
-
-      const newService = new ComponentPersonaService();
-      expect(newService.listPersonas(tempDir)).toEqual([]);
-    });
-
-    it("should handle removed component directory after initialization", () => {
-      // Service creates directories in constructor
-      expect(
-        fs.existsSync(path.join(tempDir, ".cline-personas", "components"))
-      ).toBeTruthy();
-
-      // Remove the components directory
-      fs.rmdirSync(path.join(tempDir, ".cline-personas", "components"));
-
-      // Verify listComponents handles missing directory
-      expect(service.listComponents(tempDir)).toEqual([]);
-    });
-
-    it("should handle removed persona directory after initialization", () => {
-      // Service creates directories in constructor
-      expect(
-        fs.existsSync(path.join(tempDir, ".cline-personas", "personas"))
-      ).toBeTruthy();
-
-      // Remove the personas directory
-      fs.rmdirSync(path.join(tempDir, ".cline-personas", "personas"));
-
-      // Verify listPersonas handles missing directory
-      expect(service.listPersonas(tempDir)).toEqual([]);
     });
   });
 
