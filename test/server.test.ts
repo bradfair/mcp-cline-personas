@@ -127,7 +127,7 @@ describe("Server Tools", () => {
     // Get personas
     const response = await client.callTool({
       name: "listPersonas",
-      arguments: {}
+      arguments: { tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
@@ -164,7 +164,7 @@ describe("Server Tools", () => {
     // Get components
     const response = await client.callTool({
       name: "listComponents",
-      arguments: {}
+      arguments: { tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
@@ -197,7 +197,8 @@ describe("Server Tools", () => {
     // Create persona
     const response = await client.callTool({
       name: "createOrUpdatePersona",
-      arguments: {
+      arguments: { 
+        projectRoot: tempDir,
         name: "test-persona",
         description: "test description",
         template: "template",
@@ -242,6 +243,7 @@ describe("Server Tools", () => {
     const response = await client.callTool({
       name: "createOrUpdateComponent",
       arguments: {
+        projectRoot: tempDir,
         name: "test-component",
         description: "test description",
         text: "test text",
@@ -291,6 +293,7 @@ describe("Server Tools", () => {
     const response = await client.callTool({
       name: "deletePersona",
       arguments: {
+        projectRoot: tempDir,
         name: "test-persona"
       }
     }) as { content: Array<{ type: string; text: string }> };
@@ -334,6 +337,7 @@ describe("Server Tools", () => {
     const response = await client.callTool({
       name: "deleteComponent",
       arguments: {
+        projectRoot: tempDir,
         name: "test-component"
       }
     }) as { content: Array<{ type: string; text: string }> };
@@ -377,6 +381,7 @@ describe("Server Tools", () => {
     const response = await client.callTool({
       name: "activatePersona",
       arguments: {
+        projectRoot: tempDir,
         name: "test-persona"
       }
     }) as { content: Array<{ type: string; text: string }> };
@@ -420,7 +425,7 @@ describe("Server Tools", () => {
     // Get active persona
     const response = await client.callTool({
       name: "getActivePersona",
-      arguments: {}
+      arguments: { tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
@@ -454,7 +459,7 @@ describe("Server Tools", () => {
     // Call non-existent tool
     await expect(client.callTool({
       name: "nonExistentTool",
-      arguments: {}
+      arguments: { tempDir }
     })).rejects.toThrow("Unknown tool: nonExistentTool");
   });
 });

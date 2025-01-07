@@ -41,9 +41,14 @@ export const createServer = (projectRoot: string) => {
   );
 
   // Define tool schemas based on service.ts implementation
-  const ListPersonasSchema = z.object({});
-  const ListComponentsSchema = z.object({});
+  const ListPersonasSchema = z.object({
+    projectRoot: z.string()
+  });
+  const ListComponentsSchema = z.object({
+    projectRoot: z.string()
+  });
   const CreateOrUpdatePersonaSchema = z.object({
+    projectRoot: z.string(),
     name: z.string(),
     description: z.string(),
     template: z.string(),
@@ -51,6 +56,7 @@ export const createServer = (projectRoot: string) => {
   });
   
   const CreateOrUpdateComponentSchema = z.object({
+    projectRoot: z.string(),
     name: z.string(),
     description: z.string(),
     text: z.string(),
@@ -58,16 +64,21 @@ export const createServer = (projectRoot: string) => {
   });
   
   const DeletePersonaSchema = z.object({
+    projectRoot: z.string(),
     name: z.string()
   });
   
   const DeleteComponentSchema = z.object({
+    projectRoot: z.string(),
     name: z.string()
   });
   const ActivatePersonaSchema = z.object({
+    projectRoot: z.string(),
     name: z.string()
   });
-  const GetActivePersonaSchema = z.object({});
+  const GetActivePersonaSchema = z.object({
+    projectRoot: z.string()
+  });
 
   // Setup tool handlers
   server.setRequestHandler(ListToolsRequestSchema, async () => {
