@@ -26,19 +26,19 @@ describe("Logger", () => {
   it("should log debug messages when level is debug", () => {
     logger.setLevel("debug");
     logger.debug("test message");
-    expect(console.debug).toHaveBeenCalledWith("[DEBUG] test message");
+    expect(console.error).toHaveBeenCalledWith("[DEBUG] test message");
   });
 
   it("should not log debug messages when level is info", () => {
     logger.setLevel("info");
     logger.debug("test message");
-    expect(console.debug).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should log info messages when level is info", () => {
     logger.setLevel("info");
     logger.info("test message");
-    expect(console.info).toHaveBeenCalledWith("[INFO] test message");
+    expect(console.error).toHaveBeenCalledWith("[INFO] test message");
   });
 
   it("should log warn messages when level is warn", () => {
@@ -56,6 +56,6 @@ describe("Logger", () => {
   it("should format messages with arguments", () => {
     logger.setLevel("info");
     logger.info("test %s", "message");
-    expect(console.info).toHaveBeenCalledWith("[INFO] test message");
+    expect(console.error).toHaveBeenCalledWith("[INFO] test message");
   });
 });

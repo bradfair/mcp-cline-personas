@@ -38,6 +38,10 @@ export class ComponentPersonaService
   implements ComponentService, PersonaService
 {
   private getComponentRoot(projectRoot: string): string {
+    if (!fs.existsSync(path.join(projectRoot, serviceDirectoryName))) {
+      logger.debug(`Creating service directory at ${path.join(projectRoot, serviceDirectoryName)}`);
+      fs.mkdirSync(path.join(projectRoot, serviceDirectoryName), { recursive: true });
+    }
     const componentRoot = path.join(projectRoot, serviceDirectoryName, "components");
     if (!fs.existsSync(componentRoot)) {
       logger.debug(`Creating component directory at ${componentRoot}`);
@@ -47,6 +51,10 @@ export class ComponentPersonaService
   }
 
   private getPersonaRoot(projectRoot: string): string {
+    if (!fs.existsSync(path.join(projectRoot, serviceDirectoryName))) {
+      logger.debug(`Creating service directory at ${path.join(projectRoot, serviceDirectoryName)}`);
+      fs.mkdirSync(path.join(projectRoot, serviceDirectoryName), { recursive: true });
+    }
     const personaRoot = path.join(projectRoot, serviceDirectoryName, "personas");
     if (!fs.existsSync(personaRoot)) {
       logger.debug(`Creating persona directory at ${personaRoot}`);

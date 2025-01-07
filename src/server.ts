@@ -27,8 +27,8 @@ enum ToolName {
   GET_ACTIVE_PERSONA = "getActivePersona"
 }
 
-export const createServer = (projectRoot: string) => {
-  logger.info(`Initializing server for project root: ${projectRoot}`);
+export const createServer = () => {
+  logger.info(`Initializing server`);
   const service = new ComponentPersonaService();
   const server = new Server(
     {
@@ -161,30 +161,25 @@ export const createServer = (projectRoot: string) => {
     try {
       switch (name) {
       case ToolName.LIST_PERSONAS:
+        const listPersonasArgs = ListPersonasSchema.parse(args);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(service.listPersonas(projectRoot))
+            text: JSON.stringify(service.listPersonas(listPersonasArgs.projectRoot))
           }]
         };
-
       case ToolName.LIST_COMPONENTS:
+        const listComponentsArgs = ListComponentsSchema.parse(args);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(service.listComponents(projectRoot))
+            text: JSON.stringify(service.listComponents(listComponentsArgs.projectRoot))
           }]
         };
-
       case ToolName.CREATE_OR_UPDATE_PERSONA:
         const createPersonaArgs = CreateOrUpdatePersonaSchema.parse(args);
-        const personaData = {
-          description: createPersonaArgs.description,
-          template: createPersonaArgs.template,
-          version: createPersonaArgs.version
-        };
         service.setPersona(
-          projectRoot,
+          createPersonaArgs.projectRoot,
           createPersonaArgs.name,
           createPersonaArgs.description,
           createPersonaArgs.template,
@@ -196,16 +191,10 @@ export const createServer = (projectRoot: string) => {
             text: JSON.stringify({ success: true })
           }]
         };
-
       case ToolName.CREATE_OR_UPDATE_COMPONENT:
         const createComponentArgs = CreateOrUpdateComponentSchema.parse(args);
-        const componentData = {
-          description: createComponentArgs.description,
-          text: createComponentArgs.text,
-          version: createComponentArgs.version
-        };
         service.setComponent(
-          projectRoot,
+          createComponentArgs.projectRoot,
           createComponentArgs.name,
           createComponentArgs.description,
           createComponentArgs.text,
@@ -217,46 +206,47 @@ export const createServer = (projectRoot: string) => {
             text: JSON.stringify({ success: true })
           }]
         };
-
       case ToolName.DELETE_PERSONA:
         const deletePersonaArgs = DeletePersonaSchema.parse(args);
-        service.deletePersona(projectRoot, deletePersonaArgs.name);
+        service.deletePersona(deletePersonaArgs.projectRoot, deletePersonaArgs.name);
         return {
           content: [{
             type: "text",
             text: JSON.stringify({ success: true })
           }]
         };
-
       case ToolName.DELETE_COMPONENT:
         const deleteComponentArgs = DeleteComponentSchema.parse(args);
-        service.deleteComponent(projectRoot, deleteComponentArgs.name);
+        service.deleteComponent(deleteComponentArgs.projectRoot, deleteComponentArgs.name);
         return {
           content: [{
             type: "text",
             text: JSON.stringify({ success: true })
           }]
         };
-
       case ToolName.ACTIVATE_PERSONA:
-        const activateArgs = ActivatePersonaSchema.parse(args);
-        service.activatePersona(projectRoot, activateArgs.name);
+        const activatePersonaArgs = ActivatePersonaSchema.parse(args);
+        service.activatePersona(activatePersonaArgs.projectRoot, activatePersonaArgs.name);
         return {
           content: [{
             type: "text",
             text: JSON.stringify({ success: true })
           }]
         };
-
       case ToolName.GET_ACTIVE_PERSONA:
-        const activePersona = service.getActivePersona(projectRoot);
+        const getActivePersonaArgs = GetActivePersonaSchema.parse(args);
+        const persona = service.getActivePersona(getActivePersonaArgs.projectRoot);
+        if (!persona) {
+          return {
+            content: []
+          };
+        }
         return {
           content: [{
             type: "text",
-            text: JSON.stringify({ activePersona })
+            text: persona
           }]
         };
-
       default:
         throw new Error(`Unknown tool: ${name}`);
       }

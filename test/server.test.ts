@@ -17,7 +17,7 @@ describe("Server Tools", () => {
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync("persona-test-");
-    server = createServer(tempDir);
+    server = createServer();
     transport = InMemoryTransport.createLinkedPair();
   });
 
@@ -127,7 +127,7 @@ describe("Server Tools", () => {
     // Get personas
     const response = await client.callTool({
       name: "listPersonas",
-      arguments: { tempDir }
+      arguments: { projectRoot: tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
@@ -164,7 +164,7 @@ describe("Server Tools", () => {
     // Get components
     const response = await client.callTool({
       name: "listComponents",
-      arguments: { tempDir }
+      arguments: { projectRoot: tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
@@ -425,13 +425,44 @@ describe("Server Tools", () => {
     // Get active persona
     const response = await client.callTool({
       name: "getActivePersona",
-      arguments: { tempDir }
+      arguments: { projectRoot: tempDir }
     }) as { content: Array<{ type: string; text: string }> };
 
     // Verify response
     expect(response.content[0].text).toBeDefined();
-    const result = JSON.parse(response.content[0].text);
-    expect(result.activePersona).toBe("test-persona");
+    expect(response.content[0].text).toBe("test-persona");
+  });
+
+  // Should return null if no active persona
+  test("should return null if no active persona", async () => {
+    const [clientTransport, serverTransport] = transport;
+    
+    // Connect server
+    await server.server.connect(serverTransport);
+
+    // Create client
+    const client = new Client(
+      {
+        name: "test-client",
+        version: "1.0.0"
+      },
+      {
+        capabilities: {
+          tools: {}
+        }
+      }
+    );
+
+    await client.connect(clientTransport);
+
+    // Get active persona
+    const response = await client.callTool({
+      name: "getActivePersona",
+      arguments: { projectRoot: tempDir }
+    }) as { content: Array<{ type: string; text: string }> };
+
+    // Verify response
+    expect(response.content).toHaveLength(0);
   });
 
   // Should throw an error requesting a non-existent tool

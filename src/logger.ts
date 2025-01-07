@@ -19,13 +19,13 @@ export class Logger {
 
   public debug(message: string, ...args: any[]): void {
     if (this.shouldLog("debug")) {
-      console.debug(`[DEBUG] ${format(message, ...args)}`);
+      console.error(`[DEBUG] ${format(message, ...args)}`);
     }
   }
 
   public info(message: string, ...args: any[]): void {
     if (this.shouldLog("info")) {
-      console.info(`[INFO] ${format(message, ...args)}`);
+      console.error(`[INFO] ${format(message, ...args)}`);
     }
   }
 

@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 async function runServer() {
   logger.setLevel("info");
-  const { server } = createServer('.');
+  const { server } = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
   logger.info("Cline Persona Server is running");
