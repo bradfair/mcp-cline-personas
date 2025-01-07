@@ -3,26 +3,39 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "cline-personas": "./dist/index.js"
+    "cline-personas": "./dist/src/index.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "test": "echo 'showing only failing test and coverage data:' && jest",
-    "build": "tsc",
-    "watch": "tsc -w"
+    "test": "echo 'showing only failing test and coverage data:' && NODE_NO_WARNINGS=1 node --experimental-vm-modules node_modules/.bin/jest",
+    "build": "tsc && tsc-alias",
+    "watch": "tsc -w",
+    "dev": "ts-node -r tsconfig-paths/register src/index.ts"
   },
   "author": "Brad Fair",
   "license": "MIT",
   "description": "An MCP Server that lets you implement personas in Cline via the `.clinerules` file.",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.5"
+  },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
+    "@babel/plugin-transform-runtime": "^7.25.9",
+    "@babel/preset-env": "^7.26.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.5",
+    "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "jest-silent-reporter": "^0.6.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "tsc-alias": "^1.8.10",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2",
+    "vitest": "^1.5.0"
   }
 }
