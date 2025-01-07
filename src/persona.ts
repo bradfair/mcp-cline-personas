@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { logger } from '@src/logger.js';
 
 export class Persona {
   constructor(
@@ -50,7 +51,9 @@ export class Persona {
         Number(data.version)
       );
     } catch (error) {
-      throw new Error(`Failed to load persona: ${error}`);
+      const errorMsg = `Failed to load persona: ${error}`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
   }
 

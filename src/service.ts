@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Component } from "@src/component.js";
 import { Persona } from "@src/persona.js";
+import { logger } from "@src/logger.js";
 
 const serviceDirectoryName = ".cline-personas";
 
@@ -39,6 +40,7 @@ export class ComponentPersonaService
   private getComponentRoot(projectRoot: string): string {
     const componentRoot = path.join(projectRoot, serviceDirectoryName, "components");
     if (!fs.existsSync(componentRoot)) {
+      logger.debug(`Creating component directory at ${componentRoot}`);
       fs.mkdirSync(componentRoot, { recursive: true });
     }
     return componentRoot;
@@ -47,6 +49,7 @@ export class ComponentPersonaService
   private getPersonaRoot(projectRoot: string): string {
     const personaRoot = path.join(projectRoot, serviceDirectoryName, "personas");
     if (!fs.existsSync(personaRoot)) {
+      logger.debug(`Creating persona directory at ${personaRoot}`);
       fs.mkdirSync(personaRoot, { recursive: true });
     }
     return personaRoot;
@@ -70,18 +73,26 @@ export class ComponentPersonaService
     text: string,
     version: number
   ): void {
+    logger.info(`Setting component ${name} (version ${version})`);
     const component = new Component(name, description, text, version);
-    component.saveToFile(this.getComponentPath(projectRoot, name));
+    const filePath = this.getComponentPath(projectRoot, name);
+    logger.debug(`Saving component to ${filePath}`);
+    component.saveToFile(filePath);
   }
 
   getComponent(projectRoot: string, name: string): Component | null {
     const filePath = this.getComponentPath(projectRoot, name);
-    if (!fs.existsSync(filePath)) return null;
+    logger.debug(`Loading component ${name} from ${filePath}`);
+    if (!fs.existsSync(filePath)) {
+      logger.warn(`Component file not found: ${filePath}`);
+      return null;
+    }
     return Component.loadFromFile(filePath);
   }
 
   listComponents(projectRoot: string): string[] {
     const componentRoot = this.getComponentRoot(projectRoot);
+    logger.debug(`Listing components from ${componentRoot}`);
     return fs
       .readdirSync(componentRoot)
       .filter((file) => file.endsWith(".json"))
@@ -89,6 +100,7 @@ export class ComponentPersonaService
   }
 
   deleteComponent(projectRoot: string, name: string): void {
+    logger.info(`Attempting to delete component ${name}`);
     const personas = this.listPersonas(projectRoot);
     let dependents = [];
     for (const personaName of personas) {
@@ -98,55 +110,65 @@ export class ComponentPersonaService
       }
     }
     if (dependents.length > 0) {
-      throw new Error(
-        `Cannot delete component: required by personas: ${dependents.join(
-          ", "
-        )}`
-      );
+      const errorMsg = `Cannot delete component: required by personas: ${dependents.join(", ")}`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     const filePath = this.getComponentPath(projectRoot, name);
     if (fs.existsSync(filePath)) {
+      logger.debug(`Deleting component file at ${filePath}`);
       fs.unlinkSync(filePath);
+    } else {
+      logger.warn(`Component file not found: ${filePath}`);
     }
   }
 
   // Persona operations
-    setPersona(
+  setPersona(
     projectRoot: string,
     name: string,
     description: string,
     template: string,
     version: number
   ): void {
+    logger.info(`Setting persona ${name} (version ${version})`);
     const persona = new Persona(name, description, template, version);
 
     // Validate that all template variables exist as components
     const templateComponents = persona.requiredComponents();
     for (const componentName of templateComponents) {
       if (!this.getComponent(projectRoot, componentName)) {
-        throw new Error(
-          `Cannot save persona: depends on non-existent component: ${componentName}`
-        );
+        const errorMsg = `Cannot save persona: depends on non-existent component: ${componentName}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
       }
     }
 
-    persona.saveToFile(this.getPersonaPath(projectRoot, name));
+    const filePath = this.getPersonaPath(projectRoot, name);
+    logger.debug(`Saving persona to ${filePath}`);
+    persona.saveToFile(filePath);
   }
 
-    activatePersona(projectRoot: string, name: string): void {
+  activatePersona(projectRoot: string, name: string): void {
+    logger.info(`Activating persona ${name}`);
     const persona = this.getPersona(projectRoot, name);
     if (!persona) {
-      throw new Error(`Persona not found: ${name}`);
+      const errorMsg = `Persona not found: ${name}`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     const clinerulesPath = path.join(projectRoot, ".clinerules");
+    logger.debug(`Writing persona template to ${clinerulesPath}`);
     fs.writeFileSync(clinerulesPath, persona.template);
   }
 
-    getActivePersona(projectRoot: string): string | null {
+  getActivePersona(projectRoot: string): string | null {
+    logger.debug(`Getting active persona`);
     const clinerulesPath = path.join(projectRoot, ".clinerules");
     if (!fs.existsSync(clinerulesPath)) {
+      logger.debug(`No active persona found - .clinerules file missing`);
       return null;
     }
 
@@ -157,35 +179,47 @@ export class ComponentPersonaService
     for (const personaName of personas) {
       const renderedPersona = this.renderPersona(projectRoot, personaName);
       if (renderedPersona === currentClineRules) {
+        logger.debug(`Active persona found: ${personaName}`);
         return personaName;
       }
     }
 
+    logger.debug(`No matching active persona found`);
     return null;
   }
 
-    getPersona(projectRoot: string, name: string): Persona | null {
+  getPersona(projectRoot: string, name: string): Persona | null {
     const filePath = this.getPersonaPath(projectRoot, name);
-    if (!fs.existsSync(filePath)) return null;
+    logger.debug(`Loading persona ${name} from ${filePath}`);
+    if (!fs.existsSync(filePath)) {
+      logger.warn(`Persona file not found: ${filePath}`);
+      return null;
+    }
     return Persona.loadFromFile(filePath);
   }
 
-    listPersonas(projectRoot: string): string[] {
+  listPersonas(projectRoot: string): string[] {
     const personaRoot = this.getPersonaRoot(projectRoot);
+    logger.debug(`Listing personas from ${personaRoot}`);
     return fs
       .readdirSync(personaRoot)
       .filter((file) => file.endsWith(".json"))
       .map((file) => path.basename(file, ".json"));
   }
 
-    deletePersona(projectRoot: string, name: string): void {
+  deletePersona(projectRoot: string, name: string): void {
+    logger.info(`Deleting persona ${name}`);
     const filePath = this.getPersonaPath(projectRoot, name);
     if (fs.existsSync(filePath)) {
+      logger.debug(`Deleting persona file at ${filePath}`);
       fs.unlinkSync(filePath);
+    } else {
+      logger.warn(`Persona file not found: ${filePath}`);
     }
   }
 
-    describePersonas(projectRoot: string): Map<string, string> {
+  describePersonas(projectRoot: string): Map<string, string> {
+    logger.debug(`Describing personas`);
     const personaMap = new Map<string, string>();
     for (const name of this.listPersonas(projectRoot)) {
       const persona = this.getPersona(projectRoot, name);
@@ -196,7 +230,8 @@ export class ComponentPersonaService
     return personaMap;
   }
 
-    describeComponents(projectRoot: string): Map<string, string> {
+  describeComponents(projectRoot: string): Map<string, string> {
+    logger.debug(`Describing components`);
     const componentMap = new Map<string, string>();
     for (const name of this.listComponents(projectRoot)) {
       const component = this.getComponent(projectRoot, name);
@@ -207,10 +242,13 @@ export class ComponentPersonaService
     return componentMap;
   }
 
-    renderPersona(projectRoot: string, name: string): string {
+  renderPersona(projectRoot: string, name: string): string {
+    logger.debug(`Rendering persona ${name}`);
     const persona = this.getPersona(projectRoot, name);
     if (!persona) {
-      throw new Error(`Persona not found: ${name}`);
+      const errorMsg = `Persona not found: ${name}`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     // Get all required components and their texts
@@ -218,9 +256,9 @@ export class ComponentPersonaService
     for (const componentName of persona.requiredComponents()) {
       const component = this.getComponent(projectRoot, componentName);
       if (!component) {
-        throw new Error(
-          `Cannot render persona: missing required component: ${componentName}`
-        );
+        const errorMsg = `Cannot render persona: missing required component: ${componentName}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
       }
       data[componentName] = component.text;
     }

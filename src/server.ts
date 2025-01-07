@@ -1,4 +1,5 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { logger } from '@src/logger.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -27,6 +28,7 @@ enum ToolName {
 }
 
 export const createServer = (projectRoot: string) => {
+  logger.info(`Initializing server for project root: ${projectRoot}`);
   const service = new ComponentPersonaService();
   const server = new Server(
     {
@@ -154,8 +156,10 @@ export const createServer = (projectRoot: string) => {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+    logger.info(`Executing tool: ${name}`, { args });
 
-    switch (name) {
+    try {
+      switch (name) {
       case ToolName.LIST_PERSONAS:
         return {
           content: [{
@@ -255,6 +259,10 @@ export const createServer = (projectRoot: string) => {
 
       default:
         throw new Error(`Unknown tool: ${name}`);
+      }
+    } catch (error) {
+      logger.error(`Error executing tool ${name}:`, { error });
+      throw error;
     }
   });
 

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { logger } from '@src/logger.js';
 
 export class Component {
   constructor(
@@ -50,7 +51,9 @@ export class Component {
         Number(data.version)
       );
     } catch (error) {
-      throw new Error(`Failed to load component: ${error}`);
+      const errorMsg = `Failed to load component: ${error}`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
   }
 
