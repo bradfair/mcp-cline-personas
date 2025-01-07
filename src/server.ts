@@ -30,8 +30,8 @@ export const createServer = (projectRoot: string) => {
   const service = new ComponentPersonaService();
   const server = new Server(
     {
-      name: "persona-server",
-      version: "1.0.0",
+      name: "cline-persona-server",
+      version: "0.1.0",
     },
     {
       capabilities: {
@@ -42,42 +42,42 @@ export const createServer = (projectRoot: string) => {
 
   // Define tool schemas based on service.ts implementation
   const ListPersonasSchema = z.object({
-    projectRoot: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project')
   });
   const ListComponentsSchema = z.object({
-    projectRoot: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project')
   });
   const CreateOrUpdatePersonaSchema = z.object({
-    projectRoot: z.string(),
-    name: z.string(),
-    description: z.string(),
-    template: z.string(),
-    version: z.number()
+    projectRoot: z.string().describe('Root directory path of the cline project'),
+    name: z.string().describe('Unique identifier name for the persona'),
+    description: z.string().describe('Detailed description of the persona\'s purpose and behavior'),
+    template: z.string().describe('Template content defining the persona\'s characteristics'),
+    version: z.number().describe('Version number for tracking persona updates')
   });
   
   const CreateOrUpdateComponentSchema = z.object({
-    projectRoot: z.string(),
-    name: z.string(),
-    description: z.string(),
-    text: z.string(),
-    version: z.number()
+    projectRoot: z.string().describe('Root directory path of the cline project'),
+    name: z.string().describe('Unique identifier name for the component'),
+    description: z.string().describe('Detailed description of the component\'s purpose and functionality'),
+    text: z.string().describe('Content/implementation of the component'),
+    version: z.number().describe('Version number for tracking component updates')
   });
   
   const DeletePersonaSchema = z.object({
-    projectRoot: z.string(),
-    name: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project'),
+    name: z.string().describe('Name of the persona to delete')
   });
   
   const DeleteComponentSchema = z.object({
-    projectRoot: z.string(),
-    name: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project'),
+    name: z.string().describe('Name of the component to delete')
   });
   const ActivatePersonaSchema = z.object({
-    projectRoot: z.string(),
-    name: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project'),
+    name: z.string().describe('Name of the persona to activate')
   });
   const GetActivePersonaSchema = z.object({
-    projectRoot: z.string()
+    projectRoot: z.string().describe('Root directory path of the cline project')
   });
 
   // Setup tool handlers
