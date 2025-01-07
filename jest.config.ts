@@ -12,10 +12,20 @@ module.exports = {
   collectCoverage: true,
   coverageReporters: ["text", "lcov"],
   coverageDirectory: "coverage",
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: "<rootDir>/",
-  }),
+  moduleNameMapper: {
+    "^@src/(.*)\\.js$": "<rootDir>/src/$1.ts",
+    "^@src/(.*)$": "<rootDir>/src/$1.ts"
+  },
   moduleFileExtensions: ["js", "ts"],
-  transformIgnorePatterns: ["node_modules/(?!(@modelcontextprotocol)/)"],
+  transformIgnorePatterns: ["node_modules/(?!(@modelcontextprotocol|ts-jest)/)"],
   roots: ["<rootDir>"],
+  extensionsToTreatAsEsm: [".ts"],
+  transform: {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        useESM: true
+      }
+    ]
+  }
 };
