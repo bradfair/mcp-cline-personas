@@ -1,15 +1,17 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { 
+import {
   ListPromptsRequestSchema,
   ListToolsRequestSchema,
   ListResourcesRequestSchema,
-  CallToolRequestSchema
+  CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ComponentPersonaService } from "./service.js";
+import { ComponentPersonaService } from "@src/service";
 import { z } from "zod";
 
 interface PersonaServer extends Server {
-  listPrompts(): Promise<{ personas: Array<{ name: string, description: string }> }>;
+  listPrompts(): Promise<{
+    personas: Array<{ name: string; description: string }>;
+  }>;
   createOrUpdatePersona(args: {
     name: string;
     description: string;
@@ -18,7 +20,7 @@ interface PersonaServer extends Server {
   }): Promise<{ success: boolean }>;
   deletePersona(args: { name: string }): Promise<{ success: boolean }>;
   activatePersona(args: { name: string }): Promise<{ success: boolean }>;
-  listTools(): Promise<{ tools: Array<{ name: string, description: string }> }>;
+  listTools(): Promise<{ tools: Array<{ name: string; description: string }> }>;
   createOrUpdateComponent(args: {
     name: string;
     description: string;
@@ -26,32 +28,36 @@ interface PersonaServer extends Server {
     version: number;
   }): Promise<{ success: boolean }>;
   deleteComponent(args: { name: string }): Promise<{ success: boolean }>;
-  listResources(): Promise<{ resources: Array<{ name: string, description: string }> }>;
-  callTool(args: { name: string, arguments?: unknown }): Promise<unknown>;
+  listResources(): Promise<{
+    resources: Array<{ name: string; description: string }>;
+  }>;
+  callTool(args: { name: string; arguments?: unknown }): Promise<unknown>;
 }
 
 const PersonaSchema = z.object({
   name: z.string(),
-  description: z.string()
+  description: z.string(),
 });
 
 const ComponentSchema = z.object({
   name: z.string(),
-  description: z.string()
+  description: z.string(),
 });
 
-export const createServer = (service: ComponentPersonaService): { server: PersonaServer } => {
+export const createServer = (
+  service: ComponentPersonaService
+): { server: PersonaServer } => {
   const server = new Server(
     {
       name: "cline-personas",
-      version: "0.1.0"
+      version: "0.1.0",
     },
     {
       capabilities: {
         personas: {},
         components: {},
-        logging: {}
-      }
+        logging: {},
+      },
     }
   );
 
@@ -61,8 +67,8 @@ export const createServer = (service: ComponentPersonaService): { server: Person
     return {
       personas: Array.from(personas).map(([name, description]) => ({
         name,
-        description
-      }))
+        description,
+      })),
     };
   });
 
@@ -72,8 +78,8 @@ export const createServer = (service: ComponentPersonaService): { server: Person
     return {
       tools: Array.from(components).map(([name, description]) => ({
         name,
-        description
-      }))
+        description,
+      })),
     };
   });
 
@@ -82,18 +88,18 @@ export const createServer = (service: ComponentPersonaService): { server: Person
     name: z.string(),
     description: z.string(),
     template: z.string(),
-    version: z.number()
+    version: z.number(),
   });
 
   const CreateComponentSchema = z.object({
     name: z.string(),
     description: z.string(),
     text: z.string(),
-    version: z.number()
+    version: z.number(),
   });
 
   const DeleteSchema = z.object({
-    name: z.string()
+    name: z.string(),
   });
 
   // Create/Update Persona
@@ -170,10 +176,14 @@ export const createServer = (service: ComponentPersonaService): { server: Person
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const activePersona = service.getActivePersona();
     return {
-      resources: activePersona ? [{
-        name: activePersona,
-        description: "Currently active persona"
-      }] : []
+      resources: activePersona
+        ? [
+            {
+              name: activePersona,
+              description: "Currently active persona",
+            },
+          ]
+        : [],
     };
   });
 

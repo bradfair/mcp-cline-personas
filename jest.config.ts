@@ -1,21 +1,21 @@
-import type { Config } from '@jest/types';
-import * as fs from 'fs';
+const fs = require("fs");
+const { pathsToModuleNameMapper } = require("ts-jest");
+const { compilerOptions } = JSON.parse(
+  fs.readFileSync("./tsconfig.json", "utf8")
+);
 
-const tsconfig = JSON.parse(fs.readFileSync('./tsconfig.json', 'utf8'));
-
-const config: Config.InitialOptions = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  testMatch: ['**/test/**/*.test.ts'],
-  reporters: ['jest-silent-reporter'],
+module.exports = {
+  preset: "ts-jest/presets/default-esm",
+  testEnvironment: "node",
+  testMatch: ["**/test/**/*.test.ts"],
+  reporters: ["jest-silent-reporter"],
   collectCoverage: true,
-  coverageReporters: ['text', 'lcov'],
-  coverageDirectory: 'coverage',
-  moduleNameMapper: {
-    '^@src/(.*)$': '<rootDir>/src/$1',
-    '^@test/(.*)$': '<rootDir>/test/$1'
-  },
-  roots: ['<rootDir>']
+  coverageReporters: ["text", "lcov"],
+  coverageDirectory: "coverage",
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: "<rootDir>/",
+  }),
+  moduleFileExtensions: ["js", "ts"],
+  transformIgnorePatterns: ["node_modules/(?!(@modelcontextprotocol)/)"],
+  roots: ["<rootDir>"],
 };
-
-export default config;

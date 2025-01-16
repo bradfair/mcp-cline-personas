@@ -1,12 +1,17 @@
-import fs from 'fs';
-import path from 'path';
-import { Component } from './component';
-import { Persona } from './persona';
+import fs from "fs";
+import path from "path";
+import { Component } from "@src/component";
+import { Persona } from "@src/persona";
 
-const serviceDirectoryName = '.cline-personas';
+const serviceDirectoryName = ".cline-personas";
 
 export interface ComponentService {
-  setComponent(name: string, description: string, text: string, version: number): void;
+  setComponent(
+    name: string,
+    description: string,
+    text: string,
+    version: number
+  ): void;
   getComponent(name: string): Component | null;
   listComponents(): string[];
   deleteComponent(name: string): void;
@@ -14,22 +19,33 @@ export interface ComponentService {
 }
 
 export interface PersonaService {
-  setPersona(name: string, description: string, template: string, version: number): void;
+  setPersona(
+    name: string,
+    description: string,
+    template: string,
+    version: number
+  ): void;
   getPersona(name: string): Persona | null;
   listPersonas(): string[];
   deletePersona(name: string): void;
   describePersonas(): Map<string, string>;
 }
 
-export class ComponentPersonaService implements ComponentService, PersonaService {
+export class ComponentPersonaService
+  implements ComponentService, PersonaService
+{
   private componentRoot: string;
   private personaRoot: string;
   public readonly projectRoot: string;
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
-    this.componentRoot = path.join(projectRoot, serviceDirectoryName, 'components');
-    this.personaRoot = path.join(projectRoot, serviceDirectoryName, 'personas');
+    this.componentRoot = path.join(
+      projectRoot,
+      serviceDirectoryName,
+      "components"
+    );
+    this.personaRoot = path.join(projectRoot, serviceDirectoryName, "personas");
     this.ensureDirectoriesExist();
   }
 
@@ -51,7 +67,12 @@ export class ComponentPersonaService implements ComponentService, PersonaService
   }
 
   // Component operations
-  setComponent(name: string, description: string, text: string, version: number): void {
+  setComponent(
+    name: string,
+    description: string,
+    text: string,
+    version: number
+  ): void {
     const component = new Component(name, description, text, version);
     component.saveToFile(this.getComponentPath(name));
   }
@@ -64,9 +85,10 @@ export class ComponentPersonaService implements ComponentService, PersonaService
 
   listComponents(): string[] {
     if (!fs.existsSync(this.componentRoot)) return [];
-    return fs.readdirSync(this.componentRoot)
-      .filter(file => file.endsWith('.json'))
-      .map(file => path.basename(file, '.json'));
+    return fs
+      .readdirSync(this.componentRoot)
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => path.basename(file, ".json"));
   }
 
   deleteComponent(name: string): void {
@@ -79,7 +101,11 @@ export class ComponentPersonaService implements ComponentService, PersonaService
       }
     }
     if (dependents.length > 0) {
-      throw new Error(`Cannot delete component: required by personas: ${dependents.join(', ')}`);
+      throw new Error(
+        `Cannot delete component: required by personas: ${dependents.join(
+          ", "
+        )}`
+      );
     }
 
     const filePath = this.getComponentPath(name);
@@ -89,14 +115,21 @@ export class ComponentPersonaService implements ComponentService, PersonaService
   }
 
   // Persona operations
-  setPersona(name: string, description: string, template: string, version: number): void {
+  setPersona(
+    name: string,
+    description: string,
+    template: string,
+    version: number
+  ): void {
     const persona = new Persona(name, description, template, version);
-    
+
     // Validate that all template variables exist as components
     const templateComponents = persona.requiredComponents();
     for (const componentName of templateComponents) {
       if (!this.getComponent(componentName)) {
-        throw new Error(`Cannot save persona: depends on non-existent component: ${componentName}`);
+        throw new Error(
+          `Cannot save persona: depends on non-existent component: ${componentName}`
+        );
       }
     }
 
@@ -109,17 +142,17 @@ export class ComponentPersonaService implements ComponentService, PersonaService
       throw new Error(`Persona not found: ${name}`);
     }
 
-    const clinerulesPath = path.join(this.projectRoot, '.clinerules');
+    const clinerulesPath = path.join(this.projectRoot, ".clinerules");
     fs.writeFileSync(clinerulesPath, persona.template);
   }
 
   getActivePersona(): string | null {
-    const clinerulesPath = path.join(this.projectRoot, '.clinerules');
+    const clinerulesPath = path.join(this.projectRoot, ".clinerules");
     if (!fs.existsSync(clinerulesPath)) {
       return null;
     }
 
-    const currentClineRules = fs.readFileSync(clinerulesPath, 'utf-8');
+    const currentClineRules = fs.readFileSync(clinerulesPath, "utf-8");
 
     // Find the active persona by comparing rendered personas with the current .clinerules file
     const personas = this.listPersonas();
@@ -141,9 +174,10 @@ export class ComponentPersonaService implements ComponentService, PersonaService
 
   listPersonas(): string[] {
     if (!fs.existsSync(this.personaRoot)) return [];
-    return fs.readdirSync(this.personaRoot)
-      .filter(file => file.endsWith('.json'))
-      .map(file => path.basename(file, '.json'));
+    return fs
+      .readdirSync(this.personaRoot)
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => path.basename(file, ".json"));
   }
 
   deletePersona(name: string): void {
@@ -186,7 +220,9 @@ export class ComponentPersonaService implements ComponentService, PersonaService
     for (const componentName of persona.requiredComponents()) {
       const component = this.getComponent(componentName);
       if (!component) {
-        throw new Error(`Cannot render persona: missing required component: ${componentName}`);
+        throw new Error(
+          `Cannot render persona: missing required component: ${componentName}`
+        );
       }
       data[componentName] = component.text;
     }
